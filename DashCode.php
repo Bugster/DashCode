@@ -9,7 +9,8 @@ class DashCode{
 				
 		return array((int)$a2,(int)$a1,(int)$a0);
 	}
-
+	
+	//The DashCode decoder hasn't and doesn't really need to be implemented in PHP
 	private function decode($a2,$a1,$a0){
 		return ($a2 << 16)+($a1 << 8)+$a0;
 	}
@@ -60,7 +61,7 @@ class DashCode{
 	}
 	
 	private function pngdata($im){
-		$cachefile = dirname(__FILE__)."/cache/temp_".time();
+		$cachefile = dirname(__FILE__)."/temp_".time();
 		imagepng($im,$cachefile);
 		$c=file_get_contents($cachefile);
 		unlink($cachefile);
