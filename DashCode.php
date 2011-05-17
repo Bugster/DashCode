@@ -1,39 +1,83 @@
 <?php
-// red orange yellow green cyan blue violet
 class DashCode{
-	public function encode($x){
-		$a0 = ($x & 0x0000FF);
-		$a1 = ($x & 0x00FF00) >> 8;
-		$a2 = ($x & 0xFF0000) >> 16;
-
-		return array($a,$a1,$a2);
+	private function encode($x){
+		$y=ord((string)$x);
+		
+		$a0 = ($y & 0x0000FF);
+		$a1 = ($y & 0x00FF00) >> 8;
+		$a2 = ($y & 0xFF0000) >> 16;
+				
+		return array((int)$a2,(int)$a1,(int)$a0);
 	}
 
-	public function decode($a0,$a1,$a2){
+	private function decode($a2,$a1,$a0){
 		return ($a2 << 16)+($a1 << 8)+$a0;
 	}
 
 
 	public function todc($string){
 		$string = str_pad($string,48,"~");
-		/*$cs=array();
-		foreach(str_split($string) as $v){
-			$cs[]=chr($v);
-		}*/
 		
 		$cs=str_split($string,3);
-		
 		$final = array();
 		
+		$validation=json_decode
+			("[
+				[255,0,0],
+				[255,127,0],
+				[255,255,0],
+				[0,255,0],
+				[0,255,255],
+				[0,0,255],
+				[127,0,255],
+				
+				[0,0,255],
+				[0,255,255],
+				[128,0,0],
+				[127,0,255],
+				[75,0,130],
+				[255,0,0],
+				[0,255,0],
+				[255,215,0],
+				[255,255,0]
+			]",true);
+		
 		$i=0;
-		
-		foreach($cs as $v){
-		
+		while($i < 16){
+			list($r,$g,$b) = $validation[$i];
+			$final[]=$validation[$i];
+			$final[]=$validation[$i];
+			
+			
+			$s=str_split($cs[$i]);
+			foreach($s as $v){
+				$final[] = $this->encode($v);
+			}
+			$i++;
 		}
 		
+		return $final;
+	}
+	
+	private function pngdata($im){
+		$cachefile = dirname(__FILE__)."/cache/temp_".time();
+		imagepng($im,$cachefile);
+		$c=file_get_contents($cachefile);
+		unlink($cachefile);
+		return $c;
+	}
+	
+	public function dcimg($in){
+		$im = imagecreatetruecolor(80,1);
+		foreach($in as $k=>$v){
+			$c = imagecolorallocate($im,$v[0],$v[1],$v[2]);
+			imagesetpixel($im,$k,0,$c);
+		}
+		
+		return $this->pngdata($im);
+	}
+	
+	public function dashoff($t){
+		return $this->dcimg($this->todc($t));
 	}
 }
-
-$d=new DashCode();
-
-echo "Red: ".$d.decode(255,0,0)."\n";
